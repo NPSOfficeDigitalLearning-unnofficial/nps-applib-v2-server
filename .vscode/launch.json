@@ -5,12 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm start",
-            "name": "Run npm start (build and run)",
-            "request": "launch",
-            "type": "node-terminal"
-        },
-        {
             "name": "Run Built Code",
             "program": "${workspaceFolder}/dist/index.js",
             "request": "launch",

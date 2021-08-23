@@ -4,15 +4,23 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc",
+    "start": "./dist/index.js"
   },
   "author": "SciDev5",
   "license": "Github Unlicense",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.17.1",
+    "helmet": "^4.6.0",
+    "pg": "^8.7.1",
+    "sequelize": "^6.6.5"
+  },
   "devDependencies": {
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-typescript": "^7.15.0",
+    "@types/express": "^4.17.13",
     "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
