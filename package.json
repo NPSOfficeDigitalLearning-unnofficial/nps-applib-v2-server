@@ -9,7 +9,7 @@
     "start": "./dist/index.js"
   },
   "author": "SciDev5",
-  "license": "Github Unlicense",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
     "express-session": "^1.17.2",
