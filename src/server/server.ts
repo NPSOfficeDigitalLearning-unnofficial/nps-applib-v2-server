@@ -1,7 +1,9 @@
 import express from "express";
 import { PORT } from "../env";
 import helmet from "helmet";
-import { getUser, login, logout, sessionMiddleware } from "./session";
+import { sessionMiddleware } from "./session";
+import { apiRoute } from "./api/api";
+import path from "path";
 
 // ----- Construct app router ----- //
 const app = express();
@@ -13,7 +15,12 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Use Helmetjs for security stuff..
-app.use(helmet());
+app.use(helmet({contentSecurityPolicy:{
+    directives: {
+        "script-src": ["'self'","'unsafe-inline'"] // Add 'unsafe-inline' so React works.
+    },
+    useDefaults:true
+}}));
 
 // Parser middlewares, parsin
 app.use(express.json());
@@ -21,26 +28,22 @@ app.use(express.json());
 // Import session middleware which is built in `./session`.
 app.use(sessionMiddleware);
   
+// ----- ENDPOINTS ----- //
 
-// ----- TEST ENDPOINTS ----- //
+// Route containing api enpoints.
+app.use("/api",apiRoute);
 
-app.get("/",(req,res)=>{
-    res.send("It works.");
-});
 
-app.get("/login/:id",(req,res)=>{
-    const { id } = req.params;
-    login(req,id);
-    res.send(`Logged In: ${id}`);
-});
+const PUBLIC_FOLDER = path.join(process.cwd(),"/public/");
 
-app.get("/logout",(req,res)=>{
-    logout(req);
-    res.send("Logged out");
-});
+// Public folder contains react app.
+app.use(express.static(PUBLIC_FOLDER));
 
-app.get("/check",(req,res)=>{
-    res.send(`Logged In: ${getUser(req)}`);
+// Return react app index for page requests.
+app.use((req,res,next)=>{
+    if (req.method !== "GET" || !req.accepts(["html","text/html"]))
+        return void next();
+    res.sendFile(path.join(PUBLIC_FOLDER,"index.html"));
 });
 
 

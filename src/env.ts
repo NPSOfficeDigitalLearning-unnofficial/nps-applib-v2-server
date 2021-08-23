@@ -27,3 +27,8 @@ export const SESSION_SECRET = (()=>{
     else
         return val;
 })();
+
+/** If the app is in development mode */
+export const isDevMode = (process.env.NODE_ENV === "development");
+/** If the app is to ignore permissions in developer mode. */
+export const devOverridePermissions = (process.env.DEV_OVERRIDE_PERMS ?? "false").toLowerCase() === "true";

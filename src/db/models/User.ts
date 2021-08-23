@@ -1,14 +1,14 @@
 import Sequelize, { DataTypes } from "sequelize";
 import { sequelize } from "../sequelize";
 
-class Admin extends Sequelize.Model {}
-Admin.init({
+class User extends Sequelize.Model {}
+User.init({
     id: { type: DataTypes.UUID, allowNull: false, defaultValue: Sequelize.UUIDV4, primaryKey: true },
     username: { type: DataTypes.STRING, allowNull: false },
     hashedpass: { type: DataTypes.STRING, allowNull: false }
 },{
     sequelize
 });
-Admin.sync();
+User.sync();
 
-export default Admin;
+export default User;

@@ -1,6 +1,6 @@
 import { Request } from "express";
 import session from "express-session";
-import { SESSION_SECRET } from "../env";
+import { devOverridePermissions, isDevMode, SESSION_SECRET } from "../env";
 
 const sessionCookieName = "adminSession";
 
@@ -41,4 +41,18 @@ export function logout(req:Request):void {
 /** Get the id of the logged in user (or undefined if logged out). */
 export function getUser(req:Request):string|undefined {
     return getSession(req).userId;
+}
+
+/** If developer settings say authentication should be skipped for debugging. */
+const shouldSkipAuth = isDevMode && devOverridePermissions;
+
+/** Get the id of the logged in user (or undefined if logged out). */
+export function isEditor(req:Request):boolean {
+    if (shouldSkipAuth) return true;
+    return getUser(req) !== undefined; // TODO make it so some accounts are editors and some aren't.
+}
+/** Get the id of the logged in user (or undefined if logged out). */
+export function isAdmin(req:Request):boolean {
+    if (shouldSkipAuth) return true;
+    return getUser(req) !== undefined; // TODO make it so some accounts are admins and some aren't.
 }
