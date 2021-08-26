@@ -1,19 +1,58 @@
-import { Request } from "express";
+import { NextFunction, Request, Response } from "express";
 import session from "express-session";
-import { devOverridePermissions, isDevMode, SESSION_SECRET } from "../env";
+import { never } from "../const";
+import UserData from "../data/user/UserData";
+import User from "../db/models/User";
+import { ADMIN_EMAILS, devOverridePermissions, isDevMode, SESSION_SECRET } from "../env";
 
 const sessionCookieName = "adminSession";
 
-/** The session middleware used by the server to handle session stuff. */
-export const sessionMiddleware = session({
-    name: sessionCookieName,
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 172800000
+const loggedInUsers:{[id:string]:{data:UserData,expires:number}} = {};
+const lastCleared = Date.now(), CLEAR_TIMEOUT = 60000, USERDATA_LIFETIME = 300000;
+function clearStaleUserData():void {
+    const now = Date.now();
+    if (now - lastCleared > CLEAR_TIMEOUT) {
+        for (const [key,user] of Object.entries(loggedInUsers)) {
+            if (now > user.expires)
+                delete loggedInUsers[key];
+        }
     }
-});
+}
+async function tryUpdateUserData(req:Request, id:string):Promise<void> {
+    // Get the loggedInUser by id, and set it to a default if it is missing.
+    const loginEntry = loggedInUsers[id] ??= {data:never, expires:NaN};
+    if (!loginEntry.data) {
+        // Init the user data if it is not already there.
+        const dbUser = await User.findByPk(id);
+        if (dbUser)
+            loginEntry.data = new UserData(dbUser);
+        else // If the session is for an account which doesn't exist, log out.
+            logout(req);
+    }
+    // Update expire time to be the maximum user data lifetime value.
+    loginEntry.expires = Date.now() + USERDATA_LIFETIME;
+}
+
+/** The session middleware used by the server to handle session stuff. */
+export const sessionMiddleware = [
+    session({
+        name: sessionCookieName,
+        secret: SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            maxAge: 172800000
+        }
+    }),
+    // Handle changes to `loggedInUsers` map, by adding new user datas, and clearing old ones.
+    async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
+        const userId = getUserId(req);
+        if (userId)
+            await tryUpdateUserData(req,userId);
+        clearStaleUserData();
+        next();
+    }
+];
 
 // Modified types for using `req.session`
 interface SessionData {
@@ -39,8 +78,13 @@ export function logout(req:Request):void {
 }
 
 /** Get the id of the logged in user (or undefined if logged out). */
-export function getUser(req:Request):string|undefined {
+export function getUserId(req:Request):string|undefined {
     return getSession(req).userId;
+}
+/** Get the id of the logged in user (or undefined if logged out). */
+export function getUser(req:Request):UserData|undefined {
+    const id = getUserId(req);
+    return (id===undefined) ? undefined : loggedInUsers[id].data;
 }
 
 /** If developer settings say authentication should be skipped for debugging. */
@@ -49,10 +93,16 @@ const shouldSkipAuth = isDevMode && devOverridePermissions;
 /** Get the id of the logged in user (or undefined if logged out). */
 export function isEditor(req:Request):boolean {
     if (shouldSkipAuth) return true;
-    return getUser(req) !== undefined; // TODO make it so some accounts are editors and some aren't.
+    const user = getUser(req);
+    if (user === undefined) return false;
+    // Get permission data from db.
+    return user.canEdit;
 }
 /** Get the id of the logged in user (or undefined if logged out). */
 export function isAdmin(req:Request):boolean {
     if (shouldSkipAuth) return true;
-    return getUser(req) !== undefined; // TODO make it so some accounts are admins and some aren't.
+    const user = getUser(req);
+    if (user === undefined) return false;
+    // Case insensitive check if ADMIN_EMAILS allows the user to be admin.
+    return ADMIN_EMAILS.includes(user.email.toLowerCase());
 }

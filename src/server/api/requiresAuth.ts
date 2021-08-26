@@ -1,18 +1,20 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { isAdmin, isEditor } from "../session";
+import { getUserId, isAdmin, isEditor } from "../session";
 import { ERROR, resError } from "./errors";
 
-type AuthKind = "edit"|"admin";
+type AuthKind = "edit"|"admin"|"loggedOut";
 
 /** The implementation of the middleware. */
 function requiresAuthFunction(kind:AuthKind,req:Request, res:Response, next:NextFunction):void {
     // Figure out if the user is authorized based on `kind`
     let isAuthorized = false;
     switch(kind) {
-    case "edit": 
+    case "edit": // Good if is editor.
         isAuthorized = isEditor(req); break;
-    case "admin": 
+    case "admin": // Good if is admin (can edit others).
         isAuthorized = isAdmin(req); break;
+    case "loggedOut": // Good if user is logged out.
+        isAuthorized = getUserId(req) === undefined; break;
     default:
         isAuthorized = false; break;
     }

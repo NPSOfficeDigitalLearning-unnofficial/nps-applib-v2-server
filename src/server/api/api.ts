@@ -5,7 +5,7 @@ import { userRoute } from "./routes/user";
 
 // API response data types.
 export type APIDataResponse<T> = { type: "data", data: T };
-export type APIErrorResponse = { type: "error", error: string };
+export type APIErrorResponse = { type: "error", error: string, moreInfo?:string };
 export type APIResponse<T> = APIDataResponse<T> | APIErrorResponse;
 
 

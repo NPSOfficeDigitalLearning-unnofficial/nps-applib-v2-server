@@ -1,0 +1,39 @@
+import { hash, compare } from "bcrypt";
+import User from "../../db/models/User";
+import { PASSWORD_SALT_ROUNDS } from "../../env";
+import { ERROR } from "../../server/api/errors";
+
+export default class UserData {
+    get id        ():string   { return this.wrappedDBObject.id }
+    get email     ():string   { return this.wrappedDBObject.email }
+    get hashedPass():string   { return this.wrappedDBObject.hashedPass }
+    set hashedPass(v:string)  { this.wrappedDBObject.hashedPass = v }
+    get canEdit   ():boolean  { return this.wrappedDBObject.canEdit }
+    set canEdit   (v:boolean) { this.wrappedDBObject.canEdit = v }
+
+    constructor(readonly wrappedDBObject:User) {}
+
+    async checkPassword(pass:string):Promise<boolean> {
+        return await compare(pass, this.hashedPass);
+    }
+    async setPassword(pass:string):Promise<void> {
+        this.hashedPass = await hash(pass,PASSWORD_SALT_ROUNDS);
+    }
+
+    static async createUser(email:string,pass:string):Promise<UserData> {
+        if (User.findOne({where:{email:email.toLowerCase()}}))
+            throw new Error(ERROR.signupEmailTaken[1]);
+
+        const hashedPass = await hash(pass,PASSWORD_SALT_ROUNDS);
+        return new UserData(await User.create({email:email.toLowerCase(),hashedPass}));
+    }
+    static async patchUser(id:string,email?:string,canEdit?:boolean):Promise<UserData> {
+        const user = await User.findByPk(id);
+        if (!user)
+            throw new Error(ERROR.modifyNonexistentUser[1]);
+        if (email !== undefined) user.email = email;
+        if (canEdit !== undefined) user.canEdit = canEdit;
+        await user.save();
+        return new UserData(user);
+    }
+}

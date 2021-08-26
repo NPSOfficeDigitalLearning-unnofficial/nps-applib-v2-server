@@ -4,8 +4,15 @@ export const PORT = (()=>{
     const defaultPort = 3000;
     const portNumRaw = parseInt(process.env.PORT ?? "NaN");
     return isFinite(portNumRaw) ?
-        portNumRaw :
-        defaultPort;
+        portNumRaw : defaultPort;
+})();
+
+// Get and export the password salt rounds to use (default 10).
+/** Number of salt rounds to use when hashing passwords. */
+export const PASSWORD_SALT_ROUNDS = (()=>{
+    const defaultV = 10;
+    const raw = parseInt(process.env.PASSWORD_SALT_ROUNDS ?? "NaN");
+    return isFinite(raw) ? raw : defaultV;
 })();
 
 // Get and export the Postgres database url, and throw if it is missing.
@@ -26,6 +33,12 @@ export const SESSION_SECRET = (()=>{
         throw new Error("SESSION_SECRET env variable must be provided, but was missing.");
     else
         return val;
+})();
+
+// Get and export the email addresses of the admin users for authentication.
+/** The email addresses of the trusted admin users. */
+export const ADMIN_EMAILS = (()=>{
+    return process.env.ADMIN_EMAILS?.split(",").map(v=>v.trim().toLowerCase()) ?? [];
 })();
 
 /** If the app is in development mode */

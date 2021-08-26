@@ -26,7 +26,7 @@ app.use(helmet({contentSecurityPolicy:{
 app.use(express.json());
 
 // Import session middleware which is built in `./session`.
-app.use(sessionMiddleware);
+app.use(...sessionMiddleware);
   
 // ----- ENDPOINTS ----- //
 

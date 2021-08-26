@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize/types";
+import { Sequelize } from "sequelize";
 import { DATABASE_URL } from "../env";
 
 // Create, configure, and export the sequelize instance to use.
