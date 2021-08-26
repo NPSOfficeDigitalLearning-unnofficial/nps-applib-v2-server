@@ -6,7 +6,8 @@ import { userRoute } from "./routes/user";
 // API response data types.
 export type APIDataResponse<T> = { type: "data", data: T };
 export type APIErrorResponse = { type: "error", error: string, moreInfo?:string };
-export type APIResponse<T> = APIDataResponse<T> | APIErrorResponse;
+export type APISuccessResponse = { type: "success", moreInfo?:string };
+export type APIResponse<T> = APIDataResponse<T> | APIErrorResponse | APISuccessResponse;
 
 
 /** The sub-instance of express responsible for api routing. */

@@ -1,7 +1,13 @@
 import AppDataInit from "./AppDataInit";
 import { ApprovalStatusEnum, PrivacyStatusEnum, PlatformEnum, GradeLevelEnum, SubjectEnum } from "./appdata-enums";
+import QueryCache from "../../db/QueryCache";
+import App from "../../db/models/App";
+import { ERROR } from "../../server/api/errors";
 
 const DEFAULT_APP_DATA:Required<AppDataInit> = { id: null, name: "", url: "", approval: "UNK", privacy: "UNK", grades: [], platforms: [], subjects: [] };
+const APP_DATA_KEYS = Object.keys(DEFAULT_APP_DATA) as (keyof Required<AppDataInit>)[];
+
+export const allAppsCache = new QueryCache(60000,()=>App.findAll());
 
 export default class AppData {
     private _id: string|null;
@@ -54,5 +60,41 @@ export default class AppData {
     }
     toString():string {
         return `[ApplicationData "${this.name}" (id: ${this.id})]`;
+    }
+
+    static jsonifyDBApp(dbApp:App):AppDataInit {
+        const {id, name, url, approval, privacy, platforms, grades, subjects} = dbApp;
+        return {id, name, url, approval, privacy, platforms, grades, subjects};
+    }
+    static async getAllJSON():Promise<AppDataInit[]> {
+        return (await allAppsCache.getData()).map(this.jsonifyDBApp);
+    }
+    static async getByIdJSON(id:string):Promise<AppDataInit|undefined> {
+        const dbApp = await App.findByPk(id);
+        if (dbApp)
+            return this.jsonifyDBApp(dbApp);
+    }
+    static async createApp(data:Omit<AppDataInit,"id">):Promise<AppData> {
+        return new AppData(this.jsonifyDBApp(await App.create(data)));
+    }
+    static async patchApp(id:string, data:Partial<Omit<AppDataInit,"id">>):Promise<AppData> {
+        const dbApp = await App.findByPk(id);
+        if (!dbApp)
+            throw new Error(ERROR.modifyNonexistent[1]);
+        // Transfer changes in `data` to the db model.
+        for (const key_ of APP_DATA_KEYS) {
+            const key = key_ as keyof AppDataInit;
+            if (key !== "id" && data[key])
+                dbApp[key] = data[key] as never; // We know the types match, but TS doesn't so get around errors by casting to `never`
+        }
+        await dbApp.save();
+
+        return new AppData(dbApp);
+    }
+    static async deleteApp(id:string):Promise<void> {
+        const dbApp = await App.findByPk(id);
+        if (!dbApp)
+            throw new Error(ERROR.modifyNonexistent[1]);
+        await dbApp.destroy();
     }
 }

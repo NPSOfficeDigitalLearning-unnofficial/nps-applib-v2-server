@@ -1,17 +1,21 @@
-import Sequelize, { DataTypes } from "sequelize";
+import Sequelize, { DataTypes, Optional } from "sequelize";
 import { sequelize } from "../sequelize";
 
-interface User {
-    id:string; email:string; hashedPass:string; canEdit:boolean;
-}
+type UserDataStruct = {
+    id:string; email:string; hashedpass:string; canedit:boolean;
+};
 
-class User extends Sequelize.Model {
+// This is here to type-merge the UserDataStruct into user.
+interface User extends UserDataStruct {
+    /**this does nothing and is here to make typescript shut up about duplicate types*/
+    _doesnothingignorethis:never;
 }
+class User extends Sequelize.Model<UserDataStruct,Optional<UserDataStruct,"id">> {}
 User.init({
     id: { type: DataTypes.UUID, allowNull: false, defaultValue: Sequelize.UUIDV4, primaryKey: true },
     email: { type: DataTypes.STRING, allowNull: false },
     hashedpass: { type: DataTypes.STRING, allowNull: false },
-    canEdit: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    canedit: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
 },{
     sequelize
 });

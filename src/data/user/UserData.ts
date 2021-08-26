@@ -6,10 +6,10 @@ import { ERROR } from "../../server/api/errors";
 export default class UserData {
     get id        ():string   { return this.wrappedDBObject.id }
     get email     ():string   { return this.wrappedDBObject.email }
-    get hashedPass():string   { return this.wrappedDBObject.hashedPass }
-    set hashedPass(v:string)  { this.wrappedDBObject.hashedPass = v }
-    get canEdit   ():boolean  { return this.wrappedDBObject.canEdit }
-    set canEdit   (v:boolean) { this.wrappedDBObject.canEdit = v }
+    get hashedPass():string   { return this.wrappedDBObject.hashedpass }
+    set hashedPass(v:string)  { this.wrappedDBObject.hashedpass = v }
+    get canEdit   ():boolean  { return this.wrappedDBObject.canedit }
+    set canEdit   (v:boolean) { this.wrappedDBObject.canedit = v }
 
     constructor(readonly wrappedDBObject:User) {}
 
@@ -25,14 +25,14 @@ export default class UserData {
             throw new Error(ERROR.signupEmailTaken[1]);
 
         const hashedPass = await hash(pass,PASSWORD_SALT_ROUNDS);
-        return new UserData(await User.create({email:email.toLowerCase(),hashedPass}));
+        return new UserData(await User.create({email: email.toLowerCase(), hashedpass: hashedPass, canedit: false}));
     }
     static async patchUser(id:string,email?:string,canEdit?:boolean):Promise<UserData> {
         const user = await User.findByPk(id);
         if (!user)
-            throw new Error(ERROR.modifyNonexistentUser[1]);
+            throw new Error(ERROR.modifyNonexistent[1]);
         if (email !== undefined) user.email = email;
-        if (canEdit !== undefined) user.canEdit = canEdit;
+        if (canEdit !== undefined) user.canedit = canEdit;
         await user.save();
         return new UserData(user);
     }

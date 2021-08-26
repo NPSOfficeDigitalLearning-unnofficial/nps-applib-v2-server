@@ -9,8 +9,7 @@ export const userRoute = Router();
 
 /* Return the current user
 RESPONSE:
-    {id:string, email:string, canEdit:boolean} | undefined
-*/
+    {id:string, email:string, canEdit:boolean} | undefined */
 userRoute.get("", (req,res)=>{
     const user = getUser(req);
     const { id, email, canEdit } = user ?? {};
@@ -22,8 +21,7 @@ userRoute.get("", (req,res)=>{
 BODY:
     {email:string, password:string}
 RESPONSE:
-    {id:string, email:string, canEdit:boolean}
-*/
+    {id:string, email:string, canEdit:boolean} */
 userRoute.post("", requiresAuth("loggedOut"), async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
@@ -46,8 +44,7 @@ userRoute.post("", requiresAuth("loggedOut"), async (req,res)=>{
 BODY:
     {email?:string, canEdit?:boolean}
 RESPONSE:
-    {id:string, email:string, canEdit:boolean}
-*/
+    {id:string, email:string, canEdit:boolean} */
 userRoute.patch("/:id", requiresAuth("admin"), async (req,res)=>{
     const { id } = req.params;
     const { email, canEdit } = req.body as {email?:string|null,canEdit?:boolean|null};
