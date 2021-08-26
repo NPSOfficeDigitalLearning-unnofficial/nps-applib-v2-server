@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { RequestHandler, Response } from "express";
 import { errorRes } from "./resBuilder";
 
 /** Id of different errors which can occur. */
@@ -30,4 +30,17 @@ export function resErrorObj(res:Response,err:Error):void {
         resError(res,ERROR[errId as ErrorId]);
     else
         resError(res,ERROR.serverError,err.stack);
+}
+
+/** Catch errors that occur inside an express endpoint. */
+export function errorCatcher<A,B,C,D,E>(fn:RequestHandler<A, B, C, D, E>):RequestHandler<A, B, C, D, E> {
+    return (req,res,next) => {
+        try {
+            return fn(req,res,next);
+        } catch (e) {
+            if (e instanceof Error)
+                resErrorObj(res,e);
+            else resErrorObj(res,new Error(e));
+        }
+    };
 }
