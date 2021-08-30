@@ -2,7 +2,7 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { getUserId, isAdmin, isEditor } from "../session";
 import { ERROR, resError } from "./errors";
 
-type AuthKind = "edit"|"admin"|"loggedOut";
+type AuthKind = "edit"|"admin"|"loggedOut"|"loggedIn";
 
 /** The implementation of the middleware. */
 function requiresAuthFunction(kind:AuthKind,req:Request, res:Response, next:NextFunction):void {
@@ -15,6 +15,8 @@ function requiresAuthFunction(kind:AuthKind,req:Request, res:Response, next:Next
         isAuthorized = isAdmin(req); break;
     case "loggedOut": // Good if user is logged out.
         isAuthorized = getUserId(req) === undefined; break;
+    case "loggedIn": // Good if user is logged in.
+        isAuthorized = getUserId(req) !== undefined; break;
     default:
         isAuthorized = false; break;
     }

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import UserData from "../../../data/user/UserData";
-import { getUser, login } from "../../session";
+import { login } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
 import { dataRes } from "../resBuilder";
@@ -8,13 +8,13 @@ import { dataRes } from "../resBuilder";
 export const userRoute = Router();
 
 
-/* Return the current user
+/* Return a user by id
 RESPONSE:
-    {id:string, email:string, canEdit:boolean} | undefined */
-userRoute.get("", errorCatcher<never,unknown,unknown,never,{[key:string]:string}>((req,res)=>{
-    const user = getUser(req);
-    const { id, email, canEdit } = user ?? {};
-    const data = user ? {id,email,canEdit} : undefined;
+    {id:string, email:string, canEdit:boolean, isAdmin} | undefined */
+userRoute.get("/:id", errorCatcher<{id:string},unknown,unknown,never,{[key:string]:string}>(async (req,res)=>{
+    const user = await UserData.getById(req.params.id);
+    const { id, email, canEdit, isAdmin } = user ?? {};
+    const data = user ? {id,email,canEdit,isAdmin} : undefined;
     res.status(200).json(dataRes(data));
 }));
 

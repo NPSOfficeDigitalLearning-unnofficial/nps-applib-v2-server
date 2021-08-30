@@ -3,7 +3,7 @@ import session from "express-session";
 import { never } from "../const";
 import UserData from "../data/user/UserData";
 import User from "../db/models/User";
-import { ADMIN_EMAILS, devOverridePermissions, isDevMode, SESSION_SECRET } from "../env";
+import { devOverridePermissions, isDevMode, SESSION_SECRET } from "../env";
 
 const sessionCookieName = "adminSession";
 
@@ -103,6 +103,6 @@ export function isAdmin(req:Request):boolean {
     if (shouldSkipAuth) return true;
     const user = getUser(req);
     if (user === undefined) return false;
-    // Case insensitive check if ADMIN_EMAILS allows the user to be admin.
-    return ADMIN_EMAILS.includes(user.email.toLowerCase());
+    // Check if email is in ADMIN_EMAILS.
+    return user.isAdmin;
 }
