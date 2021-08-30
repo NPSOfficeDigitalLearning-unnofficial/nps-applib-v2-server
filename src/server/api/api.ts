@@ -2,6 +2,7 @@ import { Router } from "express";
 import { appRoute } from "./routes/app";
 import { ERROR, resError } from "./errors";
 import { userRoute } from "./routes/user";
+import { sessionRoute } from "./routes/session";
 
 // API response data types.
 export type APIDataResponse<T> = { type: "data", data: T };
@@ -16,6 +17,7 @@ export const apiRoute = Router();
 // ----- Sub-routes ----- //
 apiRoute.use("/app", appRoute);
 apiRoute.use("/user", userRoute);
+apiRoute.use("/session", sessionRoute);
 
 // 404 Route, any request which is not handled by the api will end up here where it will be rejected.
 apiRoute.use((req,res)=>{

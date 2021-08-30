@@ -5,12 +5,12 @@ import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
 import { dataRes, succesRes } from "../resBuilder";
 
-export const userRoute = Router();
+export const sessionRoute = Router();
 
 /* Return the current user session
 RESPONSE:
     {loggedIn:true, id:string, email:string, canEdit:boolean, isAdmin:boolean} | {loggedIn:false} */
-userRoute.get("", errorCatcher<never,unknown,unknown,never,{[key:string]:string}>((req,res)=>{
+sessionRoute.get("", errorCatcher<never,unknown,unknown,never,{[key:string]:string}>((req,res)=>{
     const user = getUser(req);
     const { id, email, canEdit, isAdmin } = user ?? {};
     const data = user ? {id,email,canEdit,isAdmin,loggedIn:true} : {loggedIn:false};
@@ -22,7 +22,7 @@ BODY:
     {email:string, password:string}
 RESPONSE:
     {id:string, email:string, canEdit:boolean, isAdmin:boolean} */
-userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
+sessionRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
         resError(res,ERROR.requestBodyInvalid);
@@ -39,7 +39,7 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
 }));
 
 /* Log out. */
-userRoute.delete("", requiresAuth("loggedIn"), errorCatcher((req,res)=>{
+sessionRoute.delete("", requiresAuth("loggedIn"), errorCatcher((req,res)=>{
     logout(req);
     res.send(succesRes());
 }));
