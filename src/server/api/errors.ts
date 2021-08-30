@@ -34,9 +34,9 @@ export function resErrorObj(res:Response,err:Error):void {
 
 /** Catch errors that occur inside an express endpoint. */
 export function errorCatcher<A,B,C,D,E>(fn:RequestHandler<A, B, C, D, E>):RequestHandler<A, B, C, D, E> {
-    return (req,res,next) => {
+    return async (req,res,next) => {
         try {
-            return fn(req,res,next);
+            return await fn(req,res,next);
         } catch (e) {
             if (e instanceof Error)
                 resErrorObj(res,e);
