@@ -9,11 +9,11 @@ export const sessionRoute = Router();
 
 /* Return the current user session
 RESPONSE:
-    {loggedIn:true, id:string, email:string, canEdit:boolean, isAdmin:boolean} | {loggedIn:false} */
+    {loggedIn:true, id:string, email:string, isEditor:boolean, isAdmin:boolean} | {loggedIn:false} */
 sessionRoute.get("", errorCatcher<never,unknown,unknown,never,{[key:string]:string}>((req,res)=>{
     const user = getUser(req);
-    const { id, email, canEdit, isAdmin } = user ?? {};
-    const data = user ? {id,email,canEdit,isAdmin,loggedIn:true} : {loggedIn:false};
+    const { id, email, isEditor, isAdmin } = user ?? {};
+    const data = user ? {id,email,isEditor,isAdmin,loggedIn:true} : {loggedIn:false};
     res.status(200).json(dataRes(data));
 }));
 
@@ -21,7 +21,7 @@ sessionRoute.get("", errorCatcher<never,unknown,unknown,never,{[key:string]:stri
 BODY:
     {email:string, password:string}
 RESPONSE:
-    {id:string, email:string, canEdit:boolean, isAdmin:boolean} */
+    {id:string, email:string, isEditor:boolean, isAdmin:boolean} */
 sessionRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
@@ -33,8 +33,8 @@ sessionRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
         resError(res,ERROR.wrongCredentials);
     else {
         login(req,user.id);
-        const { id, canEdit, isAdmin } = user;
-        res.status(200).json(dataRes({id,email,canEdit,isAdmin}));
+        const { id, isEditor, isAdmin } = user;
+        res.status(200).json(dataRes({id,email,isEditor,isAdmin}));
     }
 }));
 

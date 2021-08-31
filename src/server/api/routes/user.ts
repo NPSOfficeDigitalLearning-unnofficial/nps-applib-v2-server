@@ -10,11 +10,11 @@ export const userRoute = Router();
 
 /* Return a user by id
 RESPONSE:
-    {id:string, email:string, canEdit:boolean, isAdmin} | undefined */
+    {id:string, email:string, isEditor:boolean, isAdmin} | undefined */
 userRoute.get("/:id", errorCatcher<{id:string},unknown,unknown,never,{[key:string]:string}>(async (req,res)=>{
     const user = await UserData.getById(req.params.id);
-    const { id, email, canEdit, isAdmin } = user ?? {};
-    const data = user ? {id,email,canEdit,isAdmin} : undefined;
+    const { id, email, isEditor, isAdmin } = user ?? {};
+    const data = user ? {id,email,isEditor,isAdmin} : undefined;
     res.status(200).json(dataRes(data));
 }));
 
@@ -23,7 +23,7 @@ userRoute.get("/:id", errorCatcher<{id:string},unknown,unknown,never,{[key:strin
 BODY:
     {email:string, password:string}
 RESPONSE:
-    {id:string, email:string, canEdit:boolean} */
+    {id:string, email:string, isEditor:boolean} */
 userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
@@ -32,24 +32,24 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     }
     const user = await UserData.createUser(email,password);
     login(req,user.id);
-    const { id, canEdit } = user;
-    res.status(200).json(dataRes({id,email,canEdit}));
+    const { id, isEditor } = user;
+    res.status(200).json(dataRes({id,email,isEditor}));
 }));
 
 
 /* Modify another user.
 BODY:
-    {email?:string, canEdit?:boolean}
+    {email?:string, isEditor?:boolean}
 RESPONSE:
-    {id:string, email:string, canEdit:boolean} */
+    {id:string, email:string, isEditor:boolean} */
 userRoute.patch("/:id", requiresAuth("admin"), errorCatcher(async (req,res)=>{
     const { id } = req.params;
-    const { email, canEdit } = req.body as {email?:string|null,canEdit?:boolean|null};
-    if (typeof(email ?? "")!=="string" || typeof(canEdit ?? false)!=="boolean") {
+    const { email, isEditor } = req.body as {email?:string|null,isEditor?:boolean|null};
+    if (typeof(email ?? "")!=="string" || typeof(isEditor ?? false)!=="boolean") {
         resError(res,ERROR.requestBodyInvalid);
         return;
     }
     // `??undefined` is added to make it so null|undefined gets crushed down to undefined.
-    const user = await UserData.patchUser(id,email??undefined,canEdit??undefined);
-    res.status(200).json(dataRes({id,email:user.email,canEdit:user.canEdit}));
+    const user = await UserData.patchUser(id,email??undefined,isEditor??undefined);
+    res.status(200).json(dataRes({id,email:user.email,isEditor:user.isEditor}));
 }));
