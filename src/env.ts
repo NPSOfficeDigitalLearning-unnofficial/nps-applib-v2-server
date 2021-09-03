@@ -43,5 +43,7 @@ export const ADMIN_EMAILS = (()=>{
 
 /** If the app is in development mode */
 export const isDevMode = (process.env.NODE_ENV === "development");
+/** If the helmet security is disabled (for debugging). */
+export const CORS_LENIENCE_DEBUG = (process.env.CORS_LENIENCE_DEBUG?.toLocaleLowerCase() === "true");
 /** If the app is to ignore permissions in developer mode. */
 export const devOverridePermissions = (process.env.DEV_OVERRIDE_PERMS ?? "false").toLowerCase() === "true";

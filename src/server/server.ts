@@ -1,5 +1,5 @@
 import express from "express";
-import { PORT } from "../env";
+import { CORS_LENIENCE_DEBUG, PORT } from "../env";
 import helmet from "helmet";
 import { sessionMiddleware } from "./session";
 import { apiRoute } from "./api/api";
@@ -21,6 +21,12 @@ app.use(helmet({contentSecurityPolicy:{
     },
     useDefaults:true
 }}));
+if (CORS_LENIENCE_DEBUG) {
+    app.use((req,res,next)=>{
+        res.header("Access-Control-Allow-Origin","*");
+        next();
+    });
+}
 
 // Parser middlewares, parsin
 app.use(express.json());

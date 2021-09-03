@@ -11,7 +11,7 @@ export const ERROR:{[key in ErrorId]:ErrorEnt<key>} = {
     unauthorized: [401,"unauthorized"],
     notFound: [404,"notFound"],
     signupEmailTaken: [500,"signupEmailTaken"],
-    requestBodyInvalid: [400,"requestBodyInvalid"],
+    requestBodyInvalid: [422,"requestBodyInvalid"],
     modifyNonexistent: [404,"modifyNonexistent"],
     serverError: [500,"serverError"],
     appNotFound: [404,"appNotFound"],
@@ -41,7 +41,7 @@ export function errorCatcher<A,B,C,D,E>(fn:RequestHandler<A, B, C, D, E>):Reques
         } catch (e) {
             if (e instanceof Error)
                 resErrorObj(res,e);
-            else resErrorObj(res,new Error(e));
+            else resErrorObj(res,new Error(new String(e) as string));
         }
     };
 }
