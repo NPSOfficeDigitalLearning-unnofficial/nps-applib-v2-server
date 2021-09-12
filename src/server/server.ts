@@ -24,6 +24,7 @@ app.use(helmet({contentSecurityPolicy:{
 if (CORS_LENIENCE_DEBUG) {
     app.use((req,res,next)=>{
         res.header("Access-Control-Allow-Origin","*");
+        res.header("Access-Control-Allow-Headers","*");
         next();
     });
 }
