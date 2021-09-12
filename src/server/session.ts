@@ -95,8 +95,8 @@ export function isEditor(req:Request):boolean {
     if (shouldSkipAuth) return true;
     const user = getUser(req);
     if (user === undefined) return false;
-    // Get permission data from db.
-    return user.isEditor;
+    // Get permission data from db. (if the user is an admin, they can always edit)
+    return user.isEditor || user.isAdmin;
 }
 /** Get the id of the logged in user (or undefined if logged out). */
 export function isAdmin(req:Request):boolean {
