@@ -23,7 +23,7 @@ userRoute.get("/:id", errorCatcher<{id:string},unknown,unknown,never,{[key:strin
 BODY:
     {email:string, password:string}
 RESPONSE:
-    {id:string, email:string, isEditor:boolean} */
+    {id:string, email:string, isEditor:boolean, isAdmin:boolean} */
 userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
@@ -32,8 +32,8 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     }
     const user = await UserData.createUser(email,password);
     login(req,user.id);
-    const { id, isEditor } = user;
-    res.status(200).json(dataRes({id,email,isEditor}));
+    const { id, isEditor, isAdmin } = user;
+    res.status(200).json(dataRes({id,email,isEditor, isAdmin}));
 }));
 
 

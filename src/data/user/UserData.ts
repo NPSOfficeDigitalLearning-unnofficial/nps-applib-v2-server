@@ -26,7 +26,7 @@ export default class UserData {
     }
 
     static async createUser(email:string,pass:string):Promise<UserData> {
-        if (User.findOne({where:{email:email.toLowerCase()}}))
+        if (await User.findOne({where:{email:email.toLowerCase()}}))
             throw new Error(ERROR.signupEmailTaken[1]);
 
         const hashedPass = await hash(pass,PASSWORD_SALT_ROUNDS);

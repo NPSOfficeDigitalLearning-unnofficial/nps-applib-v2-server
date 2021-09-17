@@ -39,9 +39,10 @@ export const sessionMiddleware = [
         name: sessionCookieName,
         secret: SESSION_SECRET,
         resave: false,
-        saveUninitialized: false,
+        saveUninitialized: true,
         cookie: {
-            maxAge: 172800000
+            maxAge: 172800000,
+            secure: !isDevMode
         }
     }),
     // Handle changes to `loggedInUsers` map, by adding new user datas, and clearing old ones.
