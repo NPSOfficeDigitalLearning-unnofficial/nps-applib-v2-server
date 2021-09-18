@@ -7,11 +7,19 @@ import { dataRes } from "../resBuilder";
 
 export const userRoute = Router();
 
+/* Return all users.
+RESPONSE:
+    {id:string, email:string, isEditor:boolean, isAdmin}[] */
+userRoute.get("/", requiresAuth("admin"), errorCatcher<never,unknown,unknown,never,{[key:string]:string}>(async (req,res)=>{
+    const user = await UserData.getAll();
+    const converted = user.map(({id,email,isEditor,isAdmin})=>({id,email,isEditor,isAdmin}));
+    res.status(200).json(dataRes(converted));
+}));
 
 /* Return a user by id
 RESPONSE:
     {id:string, email:string, isEditor:boolean, isAdmin} | undefined */
-userRoute.get("/:id", errorCatcher<{id:string},unknown,unknown,never,{[key:string]:string}>(async (req,res)=>{
+userRoute.get("/:id", requiresAuth("admin"), errorCatcher<{id:string},unknown,unknown,never,{[key:string]:string}>(async (req,res)=>{
     const user = await UserData.getById(req.params.id);
     const { id, email, isEditor, isAdmin } = user ?? {};
     const data = user ? {id,email,isEditor,isAdmin} : undefined;

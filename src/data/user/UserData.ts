@@ -51,4 +51,8 @@ export default class UserData {
         if (dbApp)
             return new UserData(dbApp);
     }
+    static async getAll():Promise<UserData[]> {
+        const dbApp = await User.findAll();
+        return dbApp.map(v=>new UserData(v));
+    }
 }
