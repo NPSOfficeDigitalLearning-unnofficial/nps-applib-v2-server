@@ -24,4 +24,18 @@ export default class QueryCache<T extends Model> {
         await this.fetchIfOutdated();
         return [...this._data];
     }
+
+    forceAdd(data:T):void {
+        this._data.push(data);
+    }
+
+    async refetchOne(matcher:(t:T)=>boolean):Promise<void> {
+        await this._data.find(matcher)?.reload();
+    }
+
+    forceRemove(matcher:(t:T)=>boolean):void {
+        const matched = this._data.filter(matcher);
+        for (const toRemove of matched)
+            this._data.splice(this._data.indexOf(toRemove),1);
+    }
 }

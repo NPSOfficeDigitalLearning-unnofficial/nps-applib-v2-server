@@ -75,7 +75,9 @@ export default class AppData {
             return this.jsonifyDBApp(dbApp);
     }
     static async createApp(data:Omit<AppDataInit,"id">):Promise<AppData> {
-        return new AppData(this.jsonifyDBApp(await App.create(data)));
+        const app = await App.create(data);
+        allAppsCache.forceAdd(app);
+        return new AppData(this.jsonifyDBApp(app));
     }
     static async patchApp(id:string, data:Partial<Omit<AppDataInit,"id">>):Promise<AppData> {
         const dbApp = await App.findByPk(id);
@@ -88,13 +90,14 @@ export default class AppData {
                 dbApp[key] = data[key] as never; // We know the types match, but TS doesn't so get around errors by casting to `never`
         }
         await dbApp.save();
-
-        return new AppData(dbApp);
+        allAppsCache.refetchOne(v=>v.id===id);
+        return new AppData(this.jsonifyDBApp(dbApp));
     }
     static async deleteApp(id:string):Promise<void> {
         const dbApp = await App.findByPk(id);
         if (!dbApp)
             throw new Error(ERROR.modifyNonexistent[1]);
         await dbApp.destroy();
+        allAppsCache.forceRemove(v=>v.id===id);
     }
 }

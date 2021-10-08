@@ -80,5 +80,5 @@ RESPONSE:
     *success* */
 appRoute.delete("/:id", requiresAuth("edit"), errorCatcher(async (req,res)=>{
     await AppData.deleteApp(req.params.id);
-    res.send(200).json(succesRes());
+    res.status(200).json(succesRes());
 }));
