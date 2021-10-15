@@ -79,6 +79,11 @@ export default class AppData {
         allAppsCache.forceAdd(app);
         return new AppData(this.jsonifyDBApp(app));
     }
+    static async bulkCreateApps(data:Omit<AppDataInit,"id">[]):Promise<AppData[]> {
+        const apps = await App.bulkCreate(data);
+        apps.forEach(app=>allAppsCache.forceAdd(app));
+        return apps.map(app=>new AppData(this.jsonifyDBApp(app)));
+    }
     static async patchApp(id:string, data:Partial<Omit<AppDataInit,"id">>):Promise<AppData> {
         const dbApp = await App.findByPk(id);
         if (!dbApp)
