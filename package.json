@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "start": "./dist/index.js"
+    "start": "dist/index.js"
   },
   "author": "SciDev5",
   "license": "MIT",
