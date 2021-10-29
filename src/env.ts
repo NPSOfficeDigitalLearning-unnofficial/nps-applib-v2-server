@@ -40,6 +40,10 @@ export const SESSION_SECRET = (()=>{
 export const ADMIN_EMAILS = (()=>{
     return process.env.ADMIN_EMAILS?.split(",").map(v=>v.trim().toLowerCase()) ?? [];
 })();
+/** The email addresses of the trusted admin users. */
+export const ALLOWED_EMAIL_DOMAINS = (()=>{
+    return process.env.ALLOWED_EMAIL_DOMAINS?.split(",").map(v=>v.trim().toLowerCase()) ?? [];
+})();
 
 /** If the app is in development mode */
 export const isDevMode = (process.env.NODE_ENV === "development");
@@ -47,3 +51,18 @@ export const isDevMode = (process.env.NODE_ENV === "development");
 export const CORS_LENIENCE_DEBUG = (process.env.CORS_LENIENCE_DEBUG?.toLocaleLowerCase() === "true");
 /** If the app is to ignore permissions in developer mode. */
 export const devOverridePermissions = (process.env.DEV_OVERRIDE_PERMS ?? "false").toLowerCase() === "true";
+
+/** The source of the static data to be served. 
+ * 
+ * Formats:
+ * "url https://a.b/c.zip" -> fetch zip from url.
+ * "github user/repo" -> fetch latest release zipball.
+*/
+export const publicDataSrc = (()=>{
+    const txt = process.env.PUBLIC_DATA_SRC?.trim() ?? "";
+    const [type,src] = txt.split(" ");
+    if (!type || !src)
+        throw new Error("PUBLIC_DATA_SRC must be provided, but was missing.");
+
+    return {type,src};
+})();
