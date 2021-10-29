@@ -2,7 +2,7 @@ import { RequestHandler, Response } from "express";
 import { errorRes } from "./resBuilder";
 
 /** Id of different errors which can occur. */
-type ErrorId = "notImplemented"|"unauthorized"|"notFound"|"signupEmailTaken"|"requestBodyInvalid"|"modifyNonexistent"|"serverError"|"appNotFound"|"wrongCredentials";
+type ErrorId = "notImplemented"|"unauthorized"|"notFound"|"signupEmailTaken"|"emailInvalid"|"emailDomainNotAllowed"|"requestBodyInvalid"|"modifyNonexistent"|"serverError"|"appNotFound"|"wrongCredentials";
 
 type ErrorEnt<T extends ErrorId> = [number, T];
 /** Error datas which have the error code and reason string. */
@@ -11,6 +11,8 @@ export const ERROR:{[key in ErrorId]:ErrorEnt<key>} = {
     unauthorized: [401,"unauthorized"],
     notFound: [404,"notFound"],
     signupEmailTaken: [500,"signupEmailTaken"],
+    emailInvalid: [422,"emailInvalid"],
+    emailDomainNotAllowed: [401,"emailDomainNotAllowed"],
     requestBodyInvalid: [422,"requestBodyInvalid"],
     modifyNonexistent: [404,"modifyNonexistent"],
     serverError: [500,"serverError"],

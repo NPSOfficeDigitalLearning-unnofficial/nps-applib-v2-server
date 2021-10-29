@@ -1,6 +1,8 @@
 import { Router } from "express";
 import UserData from "../../../data/user/UserData";
-import { login } from "../../session";
+import { ALLOWED_EMAIL_DOMAINS } from "../../../env";
+import { validateEmail } from "../../../util/email";
+// import { login } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
 import { dataRes } from "../resBuilder";
@@ -38,9 +40,17 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
         resError(res,ERROR.requestBodyInvalid);
         return;
     }
-    const user = await UserData.createUser(email,password);
-    login(req,user.id);
-    const { id, isEditor, isAdmin } = user;
+    if (!validateEmail(email)) {
+        resError(res,ERROR.emailInvalid);
+        return;
+    }
+    if (!ALLOWED_EMAIL_DOMAINS.includes(email.split("@")[1].toLowerCase())) {
+        resError(res,ERROR.emailDomainNotAllowed);
+        return;
+    }
+    //const user = await UserData.createUser(email,password);
+    //login(req,user.id);
+    const { id, isEditor, isAdmin } = {id:"",isEditor:true,isAdmin:true};//user;
     res.status(200).json(dataRes({id,email,isEditor, isAdmin}));
 }));
 
