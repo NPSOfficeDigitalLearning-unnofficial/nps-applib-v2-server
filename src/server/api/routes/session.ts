@@ -1,5 +1,6 @@
 import { Router } from "express";
 import UserData from "../../../data/user/UserData";
+import { formatPassword } from "../../../util/auth";
 import { getUser, login, logout } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
@@ -29,7 +30,7 @@ sessionRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
         return;
     }
     const user = await UserData.getByEmail(email);
-    if (user === undefined || !(await user.checkPassword(password)))
+    if (user === undefined || !(await user.checkPassword(formatPassword(password))))
         resError(res,ERROR.wrongCredentials);
     else {
         login(req,user.id);

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import UserData from "../../../data/user/UserData";
 import { ALLOWED_EMAIL_DOMAINS } from "../../../env";
-import { validateEmail } from "../../../util/email";
+import { formatPassword, validateEmail, validatePasswordFormat } from "../../../util/auth";
+import { login } from "../../session";
 // import { login } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
@@ -44,13 +45,17 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
         resError(res,ERROR.emailInvalid);
         return;
     }
+    if (!validatePasswordFormat(password)) {
+        resError(res,ERROR.passwordInvalid);
+        return;
+    }
     if (!ALLOWED_EMAIL_DOMAINS.includes(email.split("@")[1].toLowerCase())) {
         resError(res,ERROR.emailDomainNotAllowed);
         return;
     }
-    //const user = await UserData.createUser(email,password);
-    //login(req,user.id);
-    const { id, isEditor, isAdmin } = {id:"",isEditor:true,isAdmin:true};//user;
+    const user = await UserData.createUser(email,formatPassword(password));
+    login(req,user.id);
+    const { id, isEditor, isAdmin } = user;
     res.status(200).json(dataRes({id,email,isEditor, isAdmin}));
 }));
 
@@ -63,7 +68,7 @@ RESPONSE:
 userRoute.patch("/:id", requiresAuth("admin"), errorCatcher(async (req,res)=>{
     const { id } = req.params;
     const { email, isEditor } = req.body as {email?:string|null,isEditor?:boolean|null};
-    if (typeof(email ?? "")!=="string" || typeof(isEditor ?? false)!=="boolean") {
+    if (typeof(email ?? "") !== "string" || typeof(isEditor ?? false) !== "boolean") {
         resError(res,ERROR.requestBodyInvalid);
         return;
     }
