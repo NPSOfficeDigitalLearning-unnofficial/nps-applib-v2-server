@@ -25,6 +25,15 @@ export const DATABASE_URL = (()=>{
         return dbUrl;
 })();
 
+/** URL this webserver will be hosted. */
+export const HOSTING_URL = (()=>{
+    const dbUrl = process.env.HOSTING_URL;
+    if (!dbUrl)
+        throw new Error("HOSTING_URL env variable must be provided, but was missing.");
+    else
+        return dbUrl;
+})();
+
 // Get and export the cookie secret for making signed cookies.
 /** The secret token used for signed cookies. */
 export const SESSION_SECRET = (()=>{
@@ -51,6 +60,14 @@ export const isDevMode = (process.env.NODE_ENV === "development");
 export const CORS_LENIENCE_DEBUG = (process.env.CORS_LENIENCE_DEBUG?.toLocaleLowerCase() === "true");
 /** If the app is to ignore permissions in developer mode. */
 export const devOverridePermissions = (process.env.DEV_OVERRIDE_PERMS ?? "false").toLowerCase() === "true";
+
+export const verificationEmailCredentials = (()=>{
+    const user = process.env.VERIFICATION_EMAIL;
+    const pass = process.env.VERIFICATION_EMAIL_PASS;
+    if (!user || !pass)
+        throw new Error("VERIFICATION_EMAIL and VERIFICATION_EMAIL_PASS must be provided, but were missing.");
+    return { user, pass };
+})();
 
 /** The source of the static data to be served. 
  * 
