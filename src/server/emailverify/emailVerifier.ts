@@ -1,10 +1,11 @@
+import { Request, Response } from "express";
 import { createTransport } from "nodemailer";
 import { HOSTING_URL, verificationEmailCredentials } from "../../env";
 
 const EXPIRY_CHECK_DELAY = 60000, VERIFICATION_EXPIRE_TIME = 300000;
 
 let expiryCheckT = Date.now();
-const verificationRequests:{[key:string]:{res:(verified:boolean)=>void,expires:number}} = {};
+const verificationRequests:{[key:string]:{callback:(req:Request,res:Response)=>Promise<void>,expires:number}} = {};
 
 
 console.log(verificationEmailCredentials);
@@ -27,11 +28,11 @@ function checkRequestsExpired() {
 }
 function checkOneRequestExpired(key:string) {
     const req = verificationRequests[key];
-    if (req && req.expires > Date.now())
+    if (req && Date.now() > req.expires)
         expireRequest(key);
 }
 function expireRequest(key:string) {
-    verificationRequests[key].res(false);
+    //verificationRequests[key].res(false);
     delete verificationRequests[key];
 }
 
@@ -55,23 +56,20 @@ async function sendEmail(recipient:string,subject:string,html:string) {
 
 
 
-export function resEmail(key:string):boolean {
+export function resEmail(key:string,req:Request,res:Response):boolean {    
     checkRequestsExpired();
     checkOneRequestExpired(key);
-    const req = verificationRequests[key];
-    if (req) {
-        req.res(true);
+    const ereq = verificationRequests[key];
+    if (ereq) {
+        ereq.callback(req,res);
         delete verificationRequests[key];
         return true;
     } else
         return false;
 }
-export function verifyEmail(email:string):Promise<boolean> {
-    let res:(verified:boolean)=>void = ()=>void 0;
-    const promise = new Promise<boolean>(res_=>res=res_), key = genKey();
-    verificationRequests[key] = { res, expires:Date.now()+VERIFICATION_EXPIRE_TIME };
+export function verifyEmail(email:string,callback:(req:Request,res:Response)=>Promise<void>):void {
+    const key = genKey();
+    verificationRequests[key] = { callback, expires:Date.now()+VERIFICATION_EXPIRE_TIME };
 
     sendEmail(email,"NPS-AppLib Email Verification",`<h1>Verify your email address</h1><p>You have recently used the email address ${email} to sign up on ${HOSTING_URL}. To verify your email, please click <a href="${HOSTING_URL}/verify-link/${key}">this link</a>.</p>`);
-
-    return promise;
 }

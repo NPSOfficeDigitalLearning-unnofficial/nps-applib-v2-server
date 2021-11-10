@@ -1,12 +1,13 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import UserData from "../../../data/user/UserData";
-import { ALLOWED_EMAIL_DOMAINS } from "../../../env";
+import { ADMIN_EMAILS, ALLOWED_EMAIL_DOMAINS } from "../../../env";
 import { formatPassword, validateEmail, validatePasswordFormat } from "../../../util/auth";
+import { verifyEmail } from "../../emailverify/emailVerifier";
 import { login } from "../../session";
 // import { login } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
-import { dataRes } from "../resBuilder";
+import { dataRes, succesRes } from "../resBuilder";
 
 export const userRoute = Router();
 
@@ -32,31 +33,37 @@ userRoute.get("/:id", requiresAuth("admin"), errorCatcher<{id:string},unknown,un
 
 /* Sign up.
 BODY:
-    {email:string, password:string}
-RESPONSE:
-    {id:string, email:string, isEditor:boolean, isAdmin:boolean} */
+    {email:string, password:string}*/
 userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
     const {email,password} = req.body as {email:string,password:string};
     if (typeof(email)!=="string" || typeof(password)!=="string") {
         resError(res,ERROR.requestBodyInvalid);
         return;
     }
-    if (!validateEmail(email)) {
-        resError(res,ERROR.emailInvalid);
-        return;
+    const createAccount = async (req:Request,res:Response)=>{
+        const user = await UserData.createUser(email,formatPassword(password));
+        login(req,user.id);
+        const { id, isEditor, isAdmin } = user;
+        res.status(200).json(dataRes({id,email,isEditor, isAdmin}));
+    };
+    if (ADMIN_EMAILS.includes(email))
+        createAccount(req,res);
+    else {
+        if (!validateEmail(email)) {
+            resError(res,ERROR.emailInvalid);
+            return;
+        }
+        if (!validatePasswordFormat(password)) {
+            resError(res,ERROR.passwordInvalid);
+            return;
+        }
+        if (!ALLOWED_EMAIL_DOMAINS.includes(email.split("@")[1].toLowerCase())) {
+            resError(res,ERROR.emailDomainNotAllowed);
+            return;
+        }
+        verifyEmail(email,createAccount);
+        res.status(200).json(succesRes());
     }
-    if (!validatePasswordFormat(password)) {
-        resError(res,ERROR.passwordInvalid);
-        return;
-    }
-    if (!ALLOWED_EMAIL_DOMAINS.includes(email.split("@")[1].toLowerCase())) {
-        resError(res,ERROR.emailDomainNotAllowed);
-        return;
-    }
-    const user = await UserData.createUser(email,formatPassword(password));
-    login(req,user.id);
-    const { id, isEditor, isAdmin } = user;
-    res.status(200).json(dataRes({id,email,isEditor, isAdmin}));
 }));
 
 

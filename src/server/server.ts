@@ -4,7 +4,6 @@ import helmet from "helmet";
 import { sessionMiddleware } from "./session";
 import { apiRoute } from "./api/api";
 import path from "path";
-import { resEmail } from "./emailverify/emailVerifier";
 
 // ----- Construct app router ----- //
 const app = express();
@@ -42,13 +41,6 @@ app.use(...sessionMiddleware);
 
 // Route containing api enpoints.
 app.use("/api",apiRoute);
-
-// Resolver for email verification.
-app.get("/verify/:key",(req,res)=>{
-    if (resEmail(req.params["key"]))
-        res.redirect("/");
-    else res.send("TODO verify failed: key not found");
-});
 
 
 const PUBLIC_FOLDER = path.join(process.cwd(),"/public/");
