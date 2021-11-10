@@ -45,9 +45,10 @@ function appDataVerify(data:Omit<AppDataInit,"id">|Required<Omit<AppDataInit,"id
     }
     if (required) {
         // require all the data to be present
-        const {name,url,approval,privacy,platforms,grades,subjects} = data as Required<Omit<AppDataInit,"id">>;
-        if (typeof(name) !== "string" ||
-            typeof(url)  !== "string" ||
+        const {name,url,embed,approval,privacy,platforms,grades,subjects} = data as Required<Omit<AppDataInit,"id">>;
+        if (typeof(name)   !== "string" ||
+            typeof(url)    !== "string" ||
+            typeof(embed)  !== "string" ||
             !allAreFromArray(APPROVAL_STATUSES,[approval ]) ||
             !allAreFromArray(PRIVACY_STATUSES, [privacy  ]) ||
             !allAreFromArray(PLATFORMS,         platforms ) ||
@@ -60,9 +61,10 @@ function appDataVerify(data:Omit<AppDataInit,"id">|Required<Omit<AppDataInit,"id
         }
     } else {
         // require some the data to be present but of the right type
-        const {name,url,approval,privacy,platforms,grades,subjects} = data as Omit<AppDataInit,"id">;
-        if (typeof(name ?? "") !== "string" ||
-            typeof(url  ?? "") !== "string" ||
+        const {name,url,embed,approval,privacy,platforms,grades,subjects} = data as Omit<AppDataInit,"id">;
+        if (typeof(name   ?? "") !== "string" ||
+            typeof(url    ?? "") !== "string" ||
+            typeof(embed  ?? "") !== "string" ||
             !allAreFromArray(APPROVAL_STATUSES,[approval  ?? "UNK"]) ||
             !allAreFromArray(PRIVACY_STATUSES, [privacy   ?? "UNK"]) ||
             !allAreFromArray(PLATFORMS,         platforms ?? []    ) ||
@@ -85,8 +87,8 @@ RESPONSE:
     AppDataInit */
 appRoute.post("", requiresAuth("edit"), errorCatcher(async (req,res)=>{
     if (appDataVerify(req.body, res, true)) return;
-    const {name,url,approval,privacy,platforms,grades,subjects} = req.body as Required<Omit<AppDataInit,"id">>;
-    const createdApp = (await AppData.createApp({name,url,approval,platforms,grades,privacy,subjects})).toJSON();
+    const {name,url,embed,approval,privacy,platforms,grades,subjects} = req.body as Required<Omit<AppDataInit,"id">>;
+    const createdApp = (await AppData.createApp({name,url,embed,approval,platforms,grades,privacy,subjects})).toJSON();
     res.status(200).json(dataRes(createdApp));
 }));
 
@@ -105,7 +107,7 @@ appRoute.post("bulk", requiresAuth("edit"), errorCatcher(async (req,res)=>{
     for (const item of items)
         if (appDataVerify(item,res,true)) return;
     const createdApps = (await AppData.bulkCreateApps(
-        items.map(({name,url,approval,platforms,grades,privacy,subjects})=>({name,url,approval,platforms,grades,privacy,subjects}))
+        items.map(({name,url,embed,approval,platforms,grades,privacy,subjects})=>({name,url,embed,approval,platforms,grades,privacy,subjects}))
     )).map(v=>v.toJSON());
     res.status(200).json(dataRes(createdApps));
 }));
@@ -116,9 +118,9 @@ BODY:
     Partial<Omit<AppDataInit,"id">> */
 appRoute.patch("/:id", requiresAuth("edit"), errorCatcher(async (req,res)=>{
     const { id } = req.params;
-    const {name,url,approval,privacy,platforms,grades,subjects} = req.body as Omit<AppDataInit,"id">;
+    const {name,url,embed,approval,privacy,platforms,grades,subjects} = req.body as Omit<AppDataInit,"id">;
     if (appDataVerify(req.body, res, false)) return;
-    const patchedApp = (await AppData.patchApp(id,{name,url,approval,privacy,grades,platforms,subjects})).toJSON();
+    const patchedApp = (await AppData.patchApp(id,{name,url,embed,approval,privacy,grades,platforms,subjects})).toJSON();
     res.status(200).json(dataRes(patchedApp));
 }));
 

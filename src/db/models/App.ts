@@ -15,6 +15,7 @@ App.init({
     id: { type: DataTypes.UUID, allowNull: false, defaultValue: Sequelize.UUIDV4, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
     url: { type: DataTypes.STRING },
+    embed: { type: DataTypes.STRING },
     approval: { type: DataTypes.ENUM(...APPROVAL_STATUSES), defaultValue: APPROVAL_STATUSES[0], allowNull: false },
     privacy: { type: DataTypes.ENUM(...PRIVACY_STATUSES), defaultValue: PRIVACY_STATUSES[0], allowNull: false },
     platforms: { type: DataTypes.ARRAY(DataTypes.ENUM(...PLATFORMS)), defaultValue: [], allowNull: false },
