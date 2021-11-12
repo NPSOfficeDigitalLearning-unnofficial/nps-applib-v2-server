@@ -17,7 +17,8 @@ app.set("trust proxy", 1);
 // Use Helmetjs for security stuff..
 app.use(helmet({contentSecurityPolicy:{
     directives: {
-        "script-src": ["'self'","'unsafe-inline'"] // Add 'unsafe-inline' so React works.
+        "script-src": ["'self'","'unsafe-inline'"], // Add 'unsafe-inline' so React works.
+        "frame-src": ["*"] // So embeds in the app view work
     },
     useDefaults:true
 }}));
