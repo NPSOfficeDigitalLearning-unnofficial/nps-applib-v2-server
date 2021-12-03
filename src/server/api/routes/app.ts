@@ -98,7 +98,7 @@ BODY:
     Required<Omit<AppDataInit,"id">>[]
 RESPONSE:
     AppDataInit[] */
-appRoute.post("bulk", requiresAuth("edit"), errorCatcher(async (req,res)=>{
+appRoute.post("/bulk", requiresAuth("edit"), errorCatcher(async (req,res)=>{
     const items = req.body as Required<Omit<AppDataInit,"id">>[];
     if (!(req.body instanceof Array)) {
         resError(res,ERROR.requestBodyInvalid);
