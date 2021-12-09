@@ -3,7 +3,7 @@ import UserData from "../../../data/user/UserData";
 import { ADMIN_EMAILS, ALLOWED_EMAIL_DOMAINS } from "../../../env";
 import { formatPassword, validateEmail, validatePasswordFormat } from "../../../util/auth";
 import { verifyEmail } from "../../emailverify/emailVerifier";
-import { login } from "../../session";
+import { getUser, login } from "../../session";
 // import { login } from "../../session";
 import { ERROR, errorCatcher, resError } from "../errors";
 import requiresAuth from "../requiresAuth";
@@ -61,7 +61,7 @@ userRoute.post("", requiresAuth("loggedOut"), errorCatcher(async (req,res)=>{
             resError(res,ERROR.emailDomainNotAllowed);
             return;
         }
-        verifyEmail(email,createAccount);
+        verifyEmail(email,"sign up",createAccount);
         res.status(200).json(succesRes());
     }
 }));
@@ -83,3 +83,23 @@ userRoute.patch("/:id", requiresAuth("admin"), errorCatcher(async (req,res)=>{
     const user = await UserData.patchUser(id,email??undefined,isEditor??undefined);
     res.status(200).json(dataRes({id,email:user.email,isEditor:user.isEditor}));
 }));
+
+/* Modify yourself.
+BODY:
+    {password?:string}
+RESPONSE:
+    {id:string, email:string, isEditor:boolean} */
+userRoute.patch("",requiresAuth("loggedIn"),(req,res)=>{
+    const { password } = req.body;
+    if (typeof(password)!=="string") {
+        resError(res,ERROR.requestBodyInvalid);
+        return;
+    }
+    const userData = getUser(req)!, { email } = userData; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    verifyEmail(email,"change your password",async(req,res)=>{
+        await userData.setPassword(password,true);
+        res.status(200).json(succesRes());
+    });
+    res.status(200).json(succesRes());
+    
+});

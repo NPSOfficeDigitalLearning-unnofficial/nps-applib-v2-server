@@ -21,8 +21,10 @@ export default class UserData {
     async checkPassword(pass:string):Promise<boolean> {
         return await compare(pass, this.hashedPass);
     }
-    async setPassword(pass:string):Promise<void> {
+    async setPassword(pass:string,save=false):Promise<void> {
         this.hashedPass = await hash(pass,PASSWORD_SALT_ROUNDS);
+        if (save)
+            this.wrappedDBObject.save();
     }
 
     static async createUser(email:string,pass:string):Promise<UserData> {
